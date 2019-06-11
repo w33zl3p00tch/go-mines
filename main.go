@@ -203,7 +203,8 @@ func update(screen *ebiten.Image) error {
 	}
 
 	// this delay reduces CPU usage. TODO: find better ways for this.
-	time.Sleep(time.Second / 30)
+	// commented out, because this sometimes breaks the SPACE action :(
+	//time.Sleep(time.Second / 30)
 
 	return nil
 }
