@@ -3,7 +3,9 @@ a Minesweeper clone written in Go using the ebiten game library
 
 
 Left-Click: clear tile
+
 Right-Click: flag tile
+
 Space: new game
 
 
