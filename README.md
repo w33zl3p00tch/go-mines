@@ -8,6 +8,7 @@ Right-Click: flag tile
 
 Space: new game
 
+![Alt text](/images/screenshot.png?raw=true "Screenshot")
 
 This started out as an exercise to test mouse interaction. While already playable, this is pretty much work-in-progress.
 
