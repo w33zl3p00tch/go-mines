@@ -125,10 +125,57 @@ func placeMines(field [][]tile) [][]tile {
 	return field
 }
 
+// clearZeroTiles clears all tiles with zero surrounding mines as well as all
+// tiles in the immediate vicinity. TODO: optimizations
+func clearZeroTiles(x, y int) {
+	type position struct {
+		x int
+		y int
+	}
+
+	var zeroTiles []position
+	initial := position{x, y}
+	zeroTiles = append(zeroTiles, initial)
+
+	maxX := len(field[0]) - 1
+	maxY := len(field) - 1
+
+	for len(zeroTiles) > 0 {
+		curX := zeroTiles[0].x
+		curY := zeroTiles[0].y
+		for i := 0; i < 3; i++ {
+		INNER:
+			for k := 0; k < 3; k++ {
+				tX := curX - 1 + k
+				tY := curY - 1 + i
+
+				if tX < 0 || tY < 0 || tX > maxX || tY > maxY {
+					continue INNER
+				}
+
+				t := field[tY][tX]
+
+				if !t.isClicked {
+					t.isClicked = true
+					if t.surroundingMines == 0 {
+						coord := position{tX, tY}
+						zeroTiles = append(zeroTiles, coord)
+					}
+					field[tY][tX] = t
+				}
+			}
+		}
+		zeroTiles = zeroTiles[1:]
+	}
+}
+
 func gameAction(x, y int) {
 	t := field[y][x]
 	if !t.isClicked {
 		t.isClicked = true
+		if t.surroundingMines == 0 {
+			clearZeroTiles(x, y)
+		}
 	} else {
 		return
 	}
