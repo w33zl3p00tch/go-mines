@@ -97,7 +97,7 @@ func prepareField() [][]tile {
 	}
 
 	field = placeMines(field)
-	field = calculateSurroundingMines(field)
+	field = countSurroundingMines(field)
 
 	return field
 }
@@ -247,150 +247,47 @@ func generateTile(tileType string) image.Image {
 	return tile
 }
 
-// calculateSurroundingMines is a horrendous abomination. Every tile's
-// neighboring fields are checked for mines and added to tile.surroundingMines.
-// While it works, this should be rewritten to be more legible and maybe even
-// elegant.
-func calculateSurroundingMines(field [][]tile) [][]tile {
-	for y := 0; y < len(field); y++ {
-		for x := 0; x < len(field[0]); x++ {
-			if x == 0 && y == 0 {
-				// upper left corner
-				if field[0][1].hasMine {
-					field[y][x].surroundingMines++
-				}
-				if field[1][1].hasMine {
-					field[y][x].surroundingMines++
-				}
-				if field[1][0].hasMine {
-					field[y][x].surroundingMines++
-				}
-			} else if x == len(field[0])-1 && y == 0 {
-				// upper right corner
-				if field[0][x-1].hasMine {
-					field[y][x].surroundingMines++
-				}
-				if field[1][x-1].hasMine {
-					field[y][x].surroundingMines++
-				}
-				if field[1][x].hasMine {
-					field[y][x].surroundingMines++
-				}
-			} else if x == 0 && y == len(field)-1 {
-				// lower left corner
-				if field[len(field)-2][0].hasMine {
-					field[y][x].surroundingMines++
-				}
-				if field[len(field)-2][1].hasMine {
-					field[y][x].surroundingMines++
-				}
-				if field[len(field)-1][1].hasMine {
-					field[y][x].surroundingMines++
-				}
-			} else if x == len(field[0])-1 && y == len(field)-1 {
-				// lower right corner
-				if field[len(field)-1][len(field[0])-2].hasMine {
-					field[y][x].surroundingMines++
-				}
-				if field[len(field)-2][len(field[0])-2].hasMine {
-					field[y][x].surroundingMines++
-				}
-				if field[len(field)-2][len(field[0])-1].hasMine {
-					field[y][x].surroundingMines++
-				}
-			} else if x > 0 && x < len(field[0])-1 && y == 0 {
-				// upper edge
-				if field[0][x-1].hasMine {
-					field[y][x].surroundingMines++
-				}
-				if field[1][x-1].hasMine {
-					field[y][x].surroundingMines++
-				}
-				if field[1][x].hasMine {
-					field[y][x].surroundingMines++
-				}
-				if field[1][x+1].hasMine {
-					field[y][x].surroundingMines++
-				}
-				if field[0][x+1].hasMine {
-					field[y][x].surroundingMines++
-				}
-			} else if x == 0 && y > 0 && y < len(field)-1 {
-				// left edge
-				if field[y-1][0].hasMine {
-					field[y][x].surroundingMines++
-				}
-				if field[y-1][1].hasMine {
-					field[y][x].surroundingMines++
-				}
-				if field[y][1].hasMine {
-					field[y][x].surroundingMines++
-				}
-				if field[y+1][1].hasMine {
-					field[y][x].surroundingMines++
-				}
-				if field[y+1][0].hasMine {
-					field[y][x].surroundingMines++
-				}
-			} else if x == len(field[0])-1 && y > 0 && y < len(field)-1 {
-				// right edge
-				if field[y-1][x].hasMine {
-					field[y][x].surroundingMines++
-				}
-				if field[y-1][x-1].hasMine {
-					field[y][x].surroundingMines++
-				}
-				if field[y][x-1].hasMine {
-					field[y][x].surroundingMines++
-				}
-				if field[y+1][x-1].hasMine {
-					field[y][x].surroundingMines++
-				}
-				if field[y+1][x].hasMine {
-					field[y][x].surroundingMines++
-				}
-			} else if x > 0 && x < len(field[0])-1 && y == len(field)-1 {
-				// lower edge
-				if field[y][x-1].hasMine {
-					field[y][x].surroundingMines++
-				}
-				if field[y-1][x-1].hasMine {
-					field[y][x].surroundingMines++
-				}
-				if field[y-1][x].hasMine {
-					field[y][x].surroundingMines++
-				}
-				if field[y-1][x+1].hasMine {
-					field[y][x].surroundingMines++
-				}
-				if field[y][x+1].hasMine {
-					field[y][x].surroundingMines++
-				}
-			} else {
-				// finally we're back in sanity-land
-				if field[y-1][x-1].hasMine {
-					field[y][x].surroundingMines++
-				}
-				if field[y-1][x].hasMine {
-					field[y][x].surroundingMines++
-				}
-				if field[y-1][x+1].hasMine {
-					field[y][x].surroundingMines++
-				}
-				if field[y][x+1].hasMine {
-					field[y][x].surroundingMines++
-				}
-				if field[y+1][x+1].hasMine {
-					field[y][x].surroundingMines++
-				}
-				if field[y+1][x].hasMine {
-					field[y][x].surroundingMines++
-				}
-				if field[y+1][x-1].hasMine {
-					field[y][x].surroundingMines++
-				}
-				if field[y][x-1].hasMine {
-					field[y][x].surroundingMines++
+// countSurroundingMines of a tile.
+func countSurroundingMines(field [][]tile) [][]tile {
+	mineX := len(field[0]) + 2
+	mineY := len(field) + 2
+
+	mineGrid := make([][]bool, mineY)
+
+	for i := 0; i < len(mineGrid); i++ {
+		mineGrid[i] = make([]bool, mineX)
+	}
+
+	for i := 0; i < len(field); i++ {
+		for k := 0; k < len(field[0]); k++ {
+			if field[i][k].hasMine {
+				mineGrid[i+1][k+1] = true
+			}
+		}
+	}
+
+	for i := 0; i < len(field); i++ {
+		for k := 0; k < len(field[0]); k++ {
+			surrMines := &field[i][k].surroundingMines
+			//  _______________________
+			// |       |       |       |
+			// |  y,x  | y,x+1 | y,x+2 |
+			// |_______|_______|_______|
+			// |       |       |       |
+			// | y+1,x |   ?   |y+1,x+2|
+			// |_______|_______|_______|
+			// |       |       |       |
+			// | y+2,x |y+2,x+1|y+2,x+2|
+			// |_______|_______|_______|
+			//
+			for mY := 0; mY < 3; mY++ {
+				for mX := 0; mX < 3; mX++ {
+					if mX == 1 && mY == 1 {
+						continue
+					}
+					if mineGrid[i+mY][k+mX] {
+						*surrMines += 1
+					}
 				}
 			}
 		}
