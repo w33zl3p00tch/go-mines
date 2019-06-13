@@ -174,12 +174,20 @@ func drawFg(x, y int) {
 			} else if !t.hasMine {
 				fg.DrawImage(tileBg, op)
 				sm := fmt.Sprint(t.surroundingMines)
+				if sm == "0" {
+					// don't draw zeros
+					continue
+				}
 				text.Draw(fg, sm, gfont, t.minX+10, t.minY+24, hlBorderCol)
 			} else if t.hasMine {
 				fg.DrawImage(tileBg, op)
 				text.Draw(fg, "#", gfont, t.minX+10, t.minY+24, mineCol)
 			}
 			if x >= t.minX && y >= t.minY && x <= t.maxX && y <= t.maxY {
+				if t.isClicked {
+					// nothing more to do for clicked tiles
+					continue
+				}
 				fg.DrawImage(highlight, op)
 				checkMouseAction(k, i)
 			}
