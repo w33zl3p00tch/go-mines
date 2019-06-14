@@ -1,16 +1,18 @@
 package main
 
 import (
+	"bytes"
 	"fmt"
 	"image"
 	"image/color"
-	"log"
+	_ "image/png"
 	"math/rand"
 	"time"
 
 	"golang.org/x/image/font"
 
 	"github.com/golang/freetype/truetype"
+	"github.com/w33zl3p00tch/go-mines/assets"
 	"github.com/w33zl3p00tch/go-mines/fonts"
 
 	"github.com/hajimehoshi/ebiten"
@@ -35,6 +37,12 @@ var (
 	bg              *ebiten.Image
 	fg              *ebiten.Image
 	gfont           font.Face
+	bOne            *ebiten.Image
+	bTwo            *ebiten.Image
+	bThree          *ebiten.Image
+	bFour           *ebiten.Image
+	bFive           *ebiten.Image
+	bombSlice       []*ebiten.Image
 )
 
 type tile struct {
@@ -46,6 +54,7 @@ type tile struct {
 	maxX             int
 	maxY             int
 	surroundingMines int
+	mineImage        int
 }
 
 var field [][]tile
@@ -62,6 +71,8 @@ func init() {
 		//Hinting: font.HintingNone,
 	})
 
+	prepareBombs()
+
 	field = prepareField()
 
 	tileImg := generateTile("tile")
@@ -75,6 +86,31 @@ func init() {
 
 	fg, _ = ebiten.NewImage(dimX, dimY, ebiten.FilterDefault)
 	drawFg(0, 0)
+}
+
+// prepareBombs converts images to *ebiten.Image vars
+func prepareBombs() {
+	img, _, err := image.Decode(bytes.NewReader(assets.Bomb1))
+	check(err)
+	bOne, _ = ebiten.NewImageFromImage(img, ebiten.FilterDefault)
+
+	img, _, err = image.Decode(bytes.NewReader(assets.Bomb2))
+	check(err)
+	bTwo, _ = ebiten.NewImageFromImage(img, ebiten.FilterDefault)
+
+	//img, _, err = image.Decode(bytes.NewReader(assets.Bomb3))
+	//check(err)
+	//bThree, _ = ebiten.NewImageFromImage(img, ebiten.FilterDefault)
+
+	img, _, err = image.Decode(bytes.NewReader(assets.Bomb4))
+	check(err)
+	bFour, _ = ebiten.NewImageFromImage(img, ebiten.FilterDefault)
+
+	img, _, err = image.Decode(bytes.NewReader(assets.Bomb5))
+	check(err)
+	bFive, _ = ebiten.NewImageFromImage(img, ebiten.FilterDefault)
+
+	bombSlice = []*ebiten.Image{bOne, bTwo, bFour, bFive}
 }
 
 // prepareField initializes the board and prepares a new game.
@@ -119,6 +155,7 @@ func placeMines(field [][]tile) [][]tile {
 		}
 
 		field[y][x].hasMine = true
+		field[y][x].mineImage = r.Intn(len(bombSlice))
 		minesPlaced++
 	}
 
@@ -228,7 +265,8 @@ func drawFg(x, y int) {
 				text.Draw(fg, sm, gfont, t.minX+10, t.minY+24, hlBorderCol)
 			} else if t.hasMine {
 				fg.DrawImage(tileBg, op)
-				text.Draw(fg, "#", gfont, t.minX+10, t.minY+24, mineCol)
+				fg.DrawImage(bombSlice[t.mineImage], op)
+				//text.Draw(fg, "#", gfont, t.minX+10, t.minY+24, mineCol)
 			}
 			if x >= t.minX && y >= t.minY && x <= t.maxX && y <= t.maxY {
 				if t.isClicked {
@@ -266,7 +304,7 @@ func update(screen *ebiten.Image) error {
 
 func main() {
 	if err := ebiten.Run(update, dimX, dimY, 1.0, "go-mines"); err != nil {
-		log.Fatal(err)
+		check(err)
 	}
 }
 
@@ -349,4 +387,11 @@ func countSurroundingMines(field [][]tile) [][]tile {
 	}
 
 	return field
+}
+
+// check errors
+func check(err error) {
+	if err != nil {
+		panic(err)
+	}
 }
