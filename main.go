@@ -21,8 +21,14 @@ import (
 )
 
 var (
+	scrX            = 256
+	scrY            = 390
 	dimX            = 256
 	dimY            = 256
+	tileSize        = 32
+	mines           = 10
+	width           = 8
+	height          = 8
 	tilePlaneCol    = color.RGBA{200, 200, 200, 255}
 	tileBorderCol   = color.RGBA{120, 120, 120, 255}
 	bgTilePlaneCol  = color.RGBA{140, 140, 140, 255}
@@ -37,6 +43,7 @@ var (
 	bg              *ebiten.Image
 	fg              *ebiten.Image
 	gfont           font.Face
+	gfontSmall      font.Face
 	bOne            *ebiten.Image
 	bTwo            *ebiten.Image
 	bThree          *ebiten.Image
@@ -71,6 +78,12 @@ func init() {
 		//Hinting: font.HintingNone,
 	})
 
+	gfontSmall = truetype.NewFace(tt, &truetype.Options{
+		Size: 18,
+		DPI:  72,
+		//Hinting: font.HintingNone,
+	})
+
 	prepareBombs()
 
 	field = prepareField()
@@ -84,8 +97,11 @@ func init() {
 	highlightImg := generateTile("highlight")
 	highlight, _ = ebiten.NewImageFromImage(highlightImg, ebiten.FilterDefault)
 
-	fg, _ = ebiten.NewImage(dimX, dimY, ebiten.FilterDefault)
+	//fg, _ = ebiten.NewImage(dimX, dimY, ebiten.FilterDefault)
 	drawFg(0, 0)
+
+	// bg, _ = ebiten.NewImage(scrX, scrY, ebiten.FilterDefault)
+	drawBg()
 }
 
 // prepareBombs converts images to *ebiten.Image vars
@@ -115,10 +131,10 @@ func prepareBombs() {
 
 // prepareField initializes the board and prepares a new game.
 func prepareField() [][]tile {
-	field := make([][]tile, 8)
+	field := make([][]tile, height)
 
 	for i := 0; i < len(field); i++ {
-		field[i] = make([]tile, 8)
+		field[i] = make([]tile, width)
 	}
 
 	for i := 0; i < len(field); i++ {
@@ -139,7 +155,7 @@ func prepareField() [][]tile {
 }
 
 func placeMines(field [][]tile) [][]tile {
-	mines := 10
+	//mines := 15
 	minesPlaced := 0
 	s := rand.NewSource(time.Now().UnixNano())
 	r := rand.New(s)
@@ -242,6 +258,7 @@ func checkMouseAction(x, y int) {
 }
 
 func drawFg(x, y int) {
+	fg, _ = ebiten.NewImage(dimX, dimY, ebiten.FilterDefault)
 	for i := 0; i < len(field); i++ {
 		for k := 0; k < len(field[0]); k++ {
 			t := field[i][k]
@@ -280,6 +297,26 @@ func drawFg(x, y int) {
 	}
 }
 
+func drawBg() {
+	bg, _ = ebiten.NewImage(scrX, scrY, ebiten.FilterDefault)
+	m := fmt.Sprint(mines)
+	w := fmt.Sprint(len(field[0]))
+	h := fmt.Sprint(len(field))
+	menu := []string{
+		//"Time:",
+		"Mines:  [n] - " + m + " + [m]",
+		"Width:  [h] - " + w + " + [j]",
+		"Height: [k] - " + h + " + [l]",
+		"[SPACE] New Game",
+	}
+	bg.Fill(tileBorderCol)
+	offset := 25
+	for i := 0; i < len(menu); i++ {
+		text.Draw(bg, menu[i], gfontSmall, 5, dimY+offset, hlBorderCol)
+		offset += 25
+	}
+}
+
 func update(screen *ebiten.Image) error {
 	x, y := ebiten.CursorPosition()
 
@@ -289,9 +326,74 @@ func update(screen *ebiten.Image) error {
 	if ebiten.IsDrawingSkipped() {
 		return nil
 	}
+	screen.DrawImage(bg, op)
 	screen.DrawImage(fg, op)
 
+	newGame := false
+	resize := false
 	if inpututil.IsKeyJustPressed(ebiten.KeySpace) {
+		newGame = true
+	}
+
+	if inpututil.IsKeyJustPressed(ebiten.KeyN) {
+		if mines > 4 {
+			mines--
+		}
+		drawBg()
+		newGame = true
+	}
+
+	if inpututil.IsKeyJustPressed(ebiten.KeyM) {
+		if mines < len(field)*len(field[0])-10 {
+			mines++
+		}
+		drawBg()
+		newGame = true
+	}
+
+	updateSize := func() {
+		drawBg()
+		newGame = true
+		resize = true
+	}
+
+	if inpututil.IsKeyJustPressed(ebiten.KeyJ) {
+		if width < 32 {
+			width++
+			dimX += tileSize
+			scrX += tileSize
+			updateSize()
+		}
+	}
+	if inpututil.IsKeyJustPressed(ebiten.KeyH) {
+		if width > 8 {
+			width--
+			dimX -= tileSize
+			scrX -= tileSize
+			updateSize()
+		}
+	}
+	if inpututil.IsKeyJustPressed(ebiten.KeyL) {
+		if height < 16 {
+			height++
+			dimY += tileSize
+			scrY += tileSize
+			updateSize()
+		}
+	}
+	if inpututil.IsKeyJustPressed(ebiten.KeyK) {
+		if height > 8 {
+			height--
+			dimY -= tileSize
+			scrY -= tileSize
+			updateSize()
+		}
+	}
+
+	if newGame {
+		if resize {
+			ebiten.SetScreenSize(scrX, scrY)
+		}
 		field = prepareField()
 	}
 
@@ -303,7 +405,7 @@ func update(screen *ebiten.Image) error {
 }
 
 func main() {
-	if err := ebiten.Run(update, dimX, dimY, 1.0, "go-mines"); err != nil {
+	if err := ebiten.Run(update, scrX, scrY, 1.0, "go-mines"); err != nil {
 		check(err)
 	}
 }
