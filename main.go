@@ -339,7 +339,6 @@ func update(screen *ebiten.Image) error {
 		if mines > 4 {
 			mines--
 		}
-		drawBg()
 		newGame = true
 	}
 
@@ -347,12 +346,10 @@ func update(screen *ebiten.Image) error {
 		if mines < len(field)*len(field[0])-10 {
 			mines++
 		}
-		drawBg()
 		newGame = true
 	}
 
 	updateSize := func() {
-		drawBg()
 		newGame = true
 		resize = true
 	}
@@ -395,6 +392,7 @@ func update(screen *ebiten.Image) error {
 			ebiten.SetScreenSize(scrX, scrY)
 		}
 		field = prepareField()
+		drawBg()
 	}
 
 	// this delay reduces CPU usage. TODO: find better ways for this.
