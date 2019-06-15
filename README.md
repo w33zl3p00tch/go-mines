@@ -1,12 +1,11 @@
 # go-mines
 a Minesweeper clone written in Go using the ebiten game library
 
-
+```
 Left-Click: clear tile
-
 Right-Click: flag tile
-
 Space: new game
+```
 
 ![Alt text](/images/screenshot.png?raw=true "Screenshot")
 
@@ -21,8 +20,9 @@ installation instructions.
 - [x] automatically clear zero-valued tiles and surroundings when clicked
 - [ ] find better ways to reduce ebiten's CPU usage
 - [ ] inform the player when the game is won
-- [ ] make board and number of mines configurable
+- [x] make board and number of mines configurable
 - [ ] add graphics for mines and flagpoles
+- [ ] when calling ebiten.SetScreenSize() the screen blacks out for a split second. - Is there a way around this, eg. setting a solid color other than black?
 
 ## License
 go-mines is licensed under a BSD style license as stated in the LICENSE file.
