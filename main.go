@@ -67,7 +67,7 @@ type tile struct {
 var field [][]tile
 
 func init() {
-	ebiten.SetMaxTPS(30)
+	//ebiten.SetMaxTPS(30)
 	tt, err := truetype.Parse(fonts.Terminus_ttf)
 	if err != nil {
 		panic(err)
@@ -308,12 +308,13 @@ func drawBg() {
 		"Width:  [h] - " + w + " + [j]",
 		"Height: [k] - " + h + " + [l]",
 		"[SPACE] New Game",
+		"[RIGHT CLICK] Flag tile",
 	}
 	bg.Fill(tileBorderCol)
-	offset := 25
+	offset := 24
 	for i := 0; i < len(menu); i++ {
-		text.Draw(bg, menu[i], gfontSmall, 5, dimY+offset, hlBorderCol)
-		offset += 25
+		text.Draw(bg, menu[i], gfontSmall, 15, dimY+offset, hlBorderCol)
+		offset += 24
 	}
 }
 
@@ -352,6 +353,7 @@ func update(screen *ebiten.Image) error {
 	updateSize := func() {
 		newGame = true
 		resize = true
+		drawFg(x, y)
 	}
 
 	if inpututil.IsKeyJustPressed(ebiten.KeyJ) {
@@ -388,11 +390,12 @@ func update(screen *ebiten.Image) error {
 	}
 
 	if newGame {
+		field = prepareField()
+		drawFg(x, y)
+		drawBg()
 		if resize {
 			ebiten.SetScreenSize(scrX, scrY)
 		}
-		field = prepareField()
-		drawBg()
 	}
 
 	// this delay reduces CPU usage. TODO: find better ways for this.
