@@ -11,6 +11,8 @@ Space: new game
 
 This started out as an exercise to test mouse interaction. While already playable, this is pretty much work-in-progress.
 
+Precompiled binaries can be found under "Releases". 
+
 To build it you need a recent golang environment and ebiten with all its dependencies.
 See [https://github.com/hajimehoshi/ebiten] and [https://ebiten.org/install.html] for
 installation instructions.
